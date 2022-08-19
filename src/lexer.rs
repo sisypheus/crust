@@ -42,7 +42,7 @@ impl Lexer {
         self.skip_whitespace();
 
         match self.ch {
-            None => token = new_token(TokenType::ILLEGAL, "".to_string()),
+            None => token = new_token(TokenType::EOF, "".to_string()),
             Some(ch) => match ch {
                 '=' => {
                     if self.peek_char() == Some('=') {
@@ -180,6 +180,10 @@ mod tests {
             token::Token {
                 token_type: token::TokenType::SEMICOLON,
                 literal: ";".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::EOF,
+                literal: "".to_string(),
             },
         ];
 
