@@ -1,9 +1,11 @@
-pub struct TokenType {
-    pub token_type: Tokens,
+#[derive(Debug, PartialEq)]
+pub struct Token {
+    pub token_type: TokenType,
     pub literal: String,
 }
 
-pub enum Tokens {
+#[derive(Debug, PartialEq)]
+pub enum TokenType {
     ILLEGAL,
     EOF,
     IDENT,
