@@ -31,5 +31,7 @@ pub enum TokenType {
     RETURN,
     TRUE,
     FALSE,
+    EQ,
+    NOT_EQ,
 }
 // type TokenList = Vec<Token>;

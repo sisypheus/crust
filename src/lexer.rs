@@ -29,6 +29,14 @@ impl Lexer {
         self.read_position += 1;
     }
 
+    fn peek_char(&self) -> Option<char> {
+        if self.read_position >= self.input.len() {
+            return None;
+        } else {
+            return Some(self.input.chars().nth(self.read_position).unwrap());
+        }
+    }
+
     fn next_token(&mut self) -> Token {
         let token: Token;
         self.skip_whitespace();
@@ -36,7 +44,14 @@ impl Lexer {
         match self.ch {
             None => token = new_token(TokenType::ILLEGAL, "".to_string()),
             Some(ch) => match ch {
-                '=' => token = new_token(TokenType::ASSIGN, ch.to_string()),
+                '=' => {
+                    if self.peek_char() == Some('=') {
+                        self.read_char();
+                        token = new_token(TokenType::EQ, "==".to_string());
+                    } else {
+                        token = new_token(TokenType::ASSIGN, ch.to_string());
+                    }
+                },
                 ';' => token = new_token(TokenType::SEMICOLON, ch.to_string()),
                 '(' => token = new_token(TokenType::LPAREN, ch.to_string()),
                 ')' => token = new_token(TokenType::RPAREN, ch.to_string()),
@@ -47,7 +62,14 @@ impl Lexer {
                 ',' => token = new_token(TokenType::COMMA, ch.to_string()),
                 '*' => token = new_token(TokenType::STAR, ch.to_string()),
                 '/' => token = new_token(TokenType::FSLASH, ch.to_string()),
-                '!' => token = new_token(TokenType::BANG, ch.to_string()),
+                '!' => {
+                    if self.peek_char() == Some('=') {
+                        self.read_char();
+                        token = new_token(TokenType::NOT_EQ, "!=".to_string());
+                    } else {
+                        token = new_token(TokenType::BANG, ch.to_string());
+                    }
+                },
                 '<' => token = new_token(TokenType::LESS, ch.to_string()),
                 '>' => token = new_token(TokenType::GREATER, ch.to_string()),
                 ch => {
@@ -55,7 +77,7 @@ impl Lexer {
                         let literal = self.read_identifier();
                         token = new_token(is_identifier(literal.as_str()), literal);
                         return token;
-                    } else if ch.is_digit(10) {
+                    } else if ch.is_digit(10){
                         let literal = self.read_number();
                         token = new_token(TokenType::INT, literal);
                         return token;
@@ -184,7 +206,10 @@ let ten = 10;
        return true;
    } else {
        return false;
-}";
+}
+10 == 10; 
+10 != 9;
+";
 
         let expected = vec![
             token::Token {
@@ -446,6 +471,38 @@ let ten = 10;
             token::Token {
                 token_type: token::TokenType::RBRACE,
                 literal: "}".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::INT,
+                literal: "10".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::EQ,
+                literal: "==".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::INT,
+                literal: "10".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::SEMICOLON,
+                literal: ";".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::INT,
+                literal: "10".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::NOT_EQ,
+                literal: "!=".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::INT,
+                literal: "9".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::SEMICOLON,
+                literal: ";".to_string(),
             },
         ];
 
