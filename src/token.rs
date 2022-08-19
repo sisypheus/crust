@@ -21,5 +21,15 @@ pub enum TokenType {
     RBRACE,
     FUNCTION,
     LET,
+    FSLASH,
+    BANG,
+    STAR,
+    LESS,
+    GREATER,
+    IF,
+    ELSE,
+    RETURN,
+    TRUE,
+    FALSE,
 }
 // type TokenList = Vec<Token>;

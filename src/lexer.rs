@@ -45,6 +45,11 @@ impl Lexer {
                 '+' => token = new_token(TokenType::PLUS, ch.to_string()),
                 '-' => token = new_token(TokenType::MINUS, ch.to_string()),
                 ',' => token = new_token(TokenType::COMMA, ch.to_string()),
+                '*' => token = new_token(TokenType::STAR, ch.to_string()),
+                '/' => token = new_token(TokenType::FSLASH, ch.to_string()),
+                '!' => token = new_token(TokenType::BANG, ch.to_string()),
+                '<' => token = new_token(TokenType::LESS, ch.to_string()),
+                '>' => token = new_token(TokenType::GREATER, ch.to_string()),
                 ch => {
                     if ch.is_alphabetic() {
                         let literal = self.read_identifier();
@@ -102,6 +107,11 @@ fn is_identifier(token: &str) -> TokenType {
     match token {
         "let" => TokenType::LET,
         "fn" => TokenType::FUNCTION,
+        "if" => TokenType::IF,
+        "else" => TokenType::ELSE,
+        "return" => TokenType::RETURN,
+        "true" => TokenType::TRUE,
+        "false" => TokenType::FALSE,
         _ => TokenType::IDENT,
     }
 }
@@ -167,7 +177,14 @@ let ten = 10;
    let add = fn(x, y) {
      x + y;
 };
-   let result = add(five, ten);";
+   let result = add(five, ten);
+   !-/*5;
+   5 < 10 > 5;
+   if (5 < 10) {
+       return true;
+   } else {
+       return false;
+}";
 
         let expected = vec![
             token::Token {
@@ -314,13 +331,128 @@ let ten = 10;
                 token_type: token::TokenType::SEMICOLON,
                 literal: ";".to_string(),
             },
+            token::Token {
+                token_type: token::TokenType::BANG,
+                literal: "!".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::MINUS,
+                literal: "-".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::FSLASH,
+                literal: "/".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::STAR,
+                literal: "*".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::INT,
+                literal: "5".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::SEMICOLON,
+                literal: ";".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::INT,
+                literal: "5".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::LESS,
+                literal: "<".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::INT,
+                literal: "10".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::GREATER,
+                literal: ">".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::INT,
+                literal: "5".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::SEMICOLON,
+                literal: ";".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::IF,
+                literal: "if".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::LPAREN,
+                literal: "(".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::INT,
+                literal: "5".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::LESS,
+                literal: "<".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::INT,
+                literal: "10".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::RPAREN,
+                literal: ")".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::LBRACE,
+                literal: "{".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::RETURN,
+                literal: "return".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::TRUE,
+                literal: "true".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::SEMICOLON,
+                literal: ";".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::RBRACE,
+                literal: "}".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::ELSE,
+                literal: "else".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::LBRACE,
+                literal: "{".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::RETURN,
+                literal: "return".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::FALSE,
+                literal: "false".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::SEMICOLON,
+                literal: ";".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::RBRACE,
+                literal: "}".to_string(),
+            },
         ];
 
         let mut lexer = Lexer::new(input);
 
         for i in 0..expected.len() {
             let tok = lexer.next_token();
-            println!("{:?}", tok);
             assert_eq!(tok.token_type, expected[i].token_type);
             assert_eq!(tok.literal, expected[i].literal);
         }
