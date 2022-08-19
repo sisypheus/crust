@@ -1,6 +1,6 @@
 use crate::token::{Token, TokenType};
 
-struct Lexer {
+pub struct Lexer {
     pub input: String,
     pub position: usize,
     pub read_position: usize,
@@ -8,7 +8,7 @@ struct Lexer {
 }
 
 impl Lexer {
-    fn new(input: &str) -> Lexer {
+    pub fn new(input: &str) -> Lexer {
         let mut l = Lexer {
             input: input.to_string(),
             position: 0,
@@ -37,7 +37,7 @@ impl Lexer {
         }
     }
 
-    fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Token {
         let token: Token;
         self.skip_whitespace();
 
