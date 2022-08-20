@@ -118,7 +118,7 @@ impl Lexer {
     }
 }
 
-fn new_token(token_type: TokenType, literal: String) -> Token {
+pub fn new_token(token_type: TokenType, literal: String) -> Token {
     Token {
         token_type,
         literal,
