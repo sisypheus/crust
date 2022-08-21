@@ -52,6 +52,9 @@ impl Parser {
             TokenType::LET => {
                 return self.parse_let_statement();
             }
+            TokenType::RETURN => {
+                return self.parse_return_statement();
+            }
             _ => {
                 return None;
             }
@@ -76,6 +79,14 @@ impl Parser {
         Some(Statement::LetStatement(ident, Expression("".to_string())))
     }
 
+    pub fn parse_return_statement(&mut self) -> Option<Statement> {
+        while !self.current_token_is(TokenType::SEMICOLON) {
+            self.next_token();
+        }
+
+        Some(Statement::ReturnStatement(Expression("".to_string())))
+    }
+
     fn current_token_is(&self, t: TokenType) -> bool {
         self.current_token.token_type == t
     }
@@ -97,7 +108,7 @@ impl Parser {
     fn peek_error(&mut self, t: &TokenType) {
         let token_literal = self.peek_token.literal.clone();
         self.errors.push(format!(
-            "expected next token to be {:?}, got {} instead",
+            "expected {:?}, but got {} instead",
             t, token_literal
         ));
     }
@@ -150,5 +161,34 @@ let foobar 838383;
             parser.parse_program();
     
             assert!(parser.errors.len() == 3);
+    }
+
+    #[test]
+    fn return_statements() {
+        let input = "
+return 5;
+return 10;
+return (add(5, 10));
+";
+
+        let lexer = Lexer::new(input);
+        let mut parser = super::Parser::new(lexer);
+
+        let program = parser.parse_program();
+
+        if program.statements.len() != 3 {
+            panic!("program.statements does not contain 3 statements");
+        }
+
+        if parser.errors.len() != 0 {
+            panic!("parser has {} errors", parser.errors.len());
+        }
+        let expected = vec![
+            Statement::ReturnStatement(Expression("".to_string())),
+            Statement::ReturnStatement(Expression("".to_string())),
+            Statement::ReturnStatement(Expression("".to_string())),
+        ];
+
+        assert_eq!(program.statements, expected);
     }
 }
