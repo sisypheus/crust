@@ -32,5 +32,5 @@ pub enum TokenType {
     TRUE,
     FALSE,
     EQ,
-    NOT_EQ,
+    NOTEQ,
 }

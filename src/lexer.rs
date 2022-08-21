@@ -65,7 +65,7 @@ impl Lexer {
                 '!' => {
                     if self.peek_char() == Some('=') {
                         self.read_char();
-                        token = new_token(TokenType::NOT_EQ, "!=".to_string());
+                        token = new_token(TokenType::NOTEQ, "!=".to_string());
                     } else {
                         token = new_token(TokenType::BANG, ch.to_string());
                     }
@@ -180,6 +180,10 @@ mod tests {
             token::Token {
                 token_type: token::TokenType::SEMICOLON,
                 literal: ";".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::EOF,
+                literal: "".to_string(),
             },
             token::Token {
                 token_type: token::TokenType::EOF,
@@ -497,7 +501,7 @@ let ten = 10;
                 literal: "10".to_string(),
             },
             token::Token {
-                token_type: token::TokenType::NOT_EQ,
+                token_type: token::TokenType::NOTEQ,
                 literal: "!=".to_string(),
             },
             token::Token {
@@ -507,6 +511,10 @@ let ten = 10;
             token::Token {
                 token_type: token::TokenType::SEMICOLON,
                 literal: ";".to_string(),
+            },
+            token::Token {
+                token_type: token::TokenType::EOF,
+                literal: "".to_string(),
             },
         ];
 
