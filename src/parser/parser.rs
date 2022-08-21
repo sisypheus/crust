@@ -9,6 +9,7 @@ pub struct Parser {
     pub lexer: Lexer,
     pub current_token: Token,
     pub peek_token: Token,
+    pub errors: Vec<String>,
 }
 
 impl Parser {
@@ -17,6 +18,7 @@ impl Parser {
             lexer,
             current_token: new_token(TokenType::ILLEGAL, "".to_string()),
             peek_token: new_token(TokenType::ILLEGAL, "".to_string()),
+            errors: Vec::new(),
         };
         parser.next_token();
         parser.next_token();
@@ -78,17 +80,26 @@ impl Parser {
         self.current_token.token_type == t
     }
 
-    fn peek_token_is(&self, t: TokenType) -> bool {
-        self.peek_token.token_type == t
+    fn peek_token_is(&self, t: &TokenType) -> bool {
+        self.peek_token.token_type == *t
     }
 
     fn expect_peek(&mut self, token: TokenType) -> bool {
-        if self.peek_token_is(token) {
+        if self.peek_token_is(&token) {
             self.next_token();
             return true;
         } else {
+            self.peek_error(&token);
             return false;
         }
+    }
+
+    fn peek_error(&mut self, t: &TokenType) {
+        let token_literal = self.peek_token.literal.clone();
+        self.errors.push(format!(
+            "expected next token to be {:?}, got {} instead",
+            t, token_literal
+        ));
     }
 }
 
@@ -123,5 +134,21 @@ let x = 5;
         ];
 
         assert_eq!(program.statements, expected);
+    }
+
+    #[test]
+    fn parse_error() {
+        let input = "
+let x 5;
+let y 10;
+let foobar 838383;
+";
+            
+            let lexer = Lexer::new(input);
+            let mut parser = super::Parser::new(lexer);
+    
+            parser.parse_program();
+    
+            assert!(parser.errors.len() == 3);
     }
 }
