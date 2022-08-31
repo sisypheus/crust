@@ -15,6 +15,7 @@ pub struct Identifier(pub String);
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
     Identifier(Identifier),
+    IntegerLiteral(i64),
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Ord, Eq)]

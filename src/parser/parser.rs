@@ -78,8 +78,8 @@ impl Parser {
 
         Some(Statement::LetStatement(
             ident.clone(),
-            Expression::Identifier(ident)),
-        )
+            Expression::Identifier(ident),
+        ))
     }
 
     pub fn parse_return_statement(&mut self) -> Option<Statement> {
@@ -106,12 +106,35 @@ impl Parser {
     }
 
     pub fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
-        match self.current_token.token_type {
+        let mut prefix = self.prefix_parse(self.current_token.token_type.clone());
+
+        if prefix.is_none() {
+            return None;
+        }
+
+        prefix
+    }
+
+    fn parse_integer_literal(&mut self) -> Option<Expression> {
+        let literal = self.current_token.literal.parse::<i64>();
+
+        match literal {
+            Ok(value) => Some(Expression::IntegerLiteral(value)),
+            Err(_) => None,
+        }
+    }
+
+    fn prefix_parse(&mut self, token: TokenType) -> Option<Expression> {
+        match token {
             TokenType::IDENT => {
-                return match self.parse_identifier() {
+                let ident = self.parse_identifier();
+                match ident {
                     Some(ident) => Some(Expression::Identifier(ident)),
                     None => None,
-                };
+                }
+            }
+            TokenType::INT => {
+                self.parse_integer_literal()
             }
             _ => None,
         }
@@ -173,9 +196,18 @@ let x = 5;
         }
 
         let expected = vec![
-            Statement::LetStatement(Identifier("x".to_string()), Expression::Identifier(Identifier("x".to_string()))),
-            Statement::LetStatement(Identifier("y".to_string()), Expression::Identifier(Identifier("y".to_string()))),
-            Statement::LetStatement(Identifier("foobar".to_string()), Expression::Identifier(Identifier("foobar".to_string()))),
+            Statement::LetStatement(
+                Identifier("x".to_string()),
+                Expression::Identifier(Identifier("x".to_string())),
+            ),
+            Statement::LetStatement(
+                Identifier("y".to_string()),
+                Expression::Identifier(Identifier("y".to_string())),
+            ),
+            Statement::LetStatement(
+                Identifier("foobar".to_string()),
+                Expression::Identifier(Identifier("foobar".to_string())),
+            ),
         ];
 
         assert_eq!(program.statements, expected);
@@ -197,50 +229,72 @@ let foobar 838383;
         assert!(parser.errors.len() == 3);
     }
 
-    // #[test]
-//     fn return_statements() {
-//         let input = "
-// return 5;
-// return 10;
-// return (add(5, 10));
-// ";
-//
-//         let lexer = Lexer::new(input);
-//         let mut parser = super::Parser::new(lexer);
-//
-//         let program = parser.parse_program();
-//
-//         if program.statements.len() != 3 {
-//             panic!("program.statements does not contain 3 statements");
-//         }
-//
-//         if parser.errors.len() != 0 {
-//             panic!("parser has {} errors", parser.errors.len());
-//         }
-//         let expected = vec![
-//             Statement::ReturnStatement(Expression("".to_string())),
-//             Statement::ReturnStatement(Expression("".to_string())),
-//             Statement::ReturnStatement(Expression("".to_string())),
-//         ];
-//
-//         assert_eq!(program.statements, expected);
-//     }
+    #[test]
+    fn return_statements() {
+        let input = "
+return 5;
+return 10;
+return (add(5, 10));
+";
 
-    // #[test]
-    // fn identifiers() {
-    //     let input = "foobar;";
-    //     let lexer = Lexer::new(input);
-    //     let mut parser = super::Parser::new(lexer);
-    //
-    //     let program = parser.parse_program();
-    //
-    //     if program.statements.len() != 1 {
-    //         panic!("program.statements does not contain 1 statements");
-    //     }
-    //     let expected = vec![Statement::LetStatement(
-    //         Identifier("foobar".to_string()),
-    //         Expression("".to_string()),
-    //     )];
-    //     assert_eq!(program.statements, expected);
-    // }
+        let lexer = Lexer::new(input);
+        let mut parser = super::Parser::new(lexer);
+
+        let program = parser.parse_program();
+
+        if program.statements.len() != 3 {
+            panic!("program.statements does not contain 3 statements");
+        }
+
+        if parser.errors.len() != 0 {
+            panic!("parser has {} errors", parser.errors.len());
+        }
+        
+        //TODO
+        let expected = vec![
+            Statement::ReturnStatement(Expression::Identifier(Identifier("5".to_string()))),
+            // Statement::ReturnStatement(Expression("".to_string())),
+            // Statement::ReturnStatement(Expression("".to_string())),
+        ];
+        println!("{:?}", program.statements);
+
+        assert_eq!(program.statements, expected);
+    }
+
+    #[test]
+    fn identifiers() {
+        let input = "foobar;";
+        let lexer = Lexer::new(input);
+        let mut parser = super::Parser::new(lexer);
+
+        let program = parser.parse_program();
+
+        if program.statements.len() != 1 {
+            panic!("program.statements does not contain 1 statements");
+        }
+        let expected = vec![Statement::LetStatement(
+            Identifier("foobar".to_string()),
+            Expression::Identifier(Identifier("foobar".to_string())),
+        )];
+        assert_eq!(program.statements, expected);
+    }
+
+    #[test]
+    fn integer_litteral() {
+        let input = "5;";
+        let lexer = Lexer::new(input);
+        let mut parser = super::Parser::new(lexer);
+
+        let program = parser.parse_program();
+
+        if program.statements.len() != 1 {
+            panic!("program.statements does not contain 1 statements");
+        }
+
+        let expected = vec![Statement::ExpressionStatement(
+            Expression::IntegerLiteral(5),
+        )];
+
+        assert_eq!(program.statements, expected);
+    }
 }
