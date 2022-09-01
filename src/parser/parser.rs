@@ -109,10 +109,19 @@ impl Parser {
         let mut prefix = self.prefix_parse(self.current_token.token_type.clone());
 
         if prefix.is_none() {
+            self.no_prefix_error();
             return None;
         }
 
         prefix
+    }
+
+    fn no_prefix_error(&mut self) {
+        let token_literal = self.peek_token.literal.clone();
+        self.errors.push(format!(
+            "no prefix parse function for {} found",
+            token_literal
+        ));
     }
 
     fn parse_integer_literal(&mut self) -> Option<Expression> {
@@ -124,6 +133,10 @@ impl Parser {
         }
     }
 
+    fn parse_prefix_expression(&mut self, token: TokenType) -> Option<Expression> {
+        None
+    }
+
     fn prefix_parse(&mut self, token: TokenType) -> Option<Expression> {
         match token {
             TokenType::IDENT => {
@@ -133,9 +146,9 @@ impl Parser {
                     None => None,
                 }
             }
-            TokenType::INT => {
-                self.parse_integer_literal()
-            }
+            TokenType::INT => self.parse_integer_literal(),
+            TokenType::BANG => self.parse_prefix_expression(token),
+            TokenType::MINUS => self.parse_prefix_expression(token),
             _ => None,
         }
     }
@@ -176,6 +189,7 @@ mod tests {
     use crate::{
         ast::ast::{Expression, Identifier, Statement},
         lexer::Lexer,
+        token::TokenType,
     };
 
     #[test]
@@ -249,14 +263,13 @@ return (add(5, 10));
         if parser.errors.len() != 0 {
             panic!("parser has {} errors", parser.errors.len());
         }
-        
+
         //TODO
         let expected = vec![
             Statement::ReturnStatement(Expression::Identifier(Identifier("5".to_string()))),
             // Statement::ReturnStatement(Expression("".to_string())),
             // Statement::ReturnStatement(Expression("".to_string())),
         ];
-        println!("{:?}", program.statements);
 
         assert_eq!(program.statements, expected);
     }
@@ -291,9 +304,28 @@ return (add(5, 10));
             panic!("program.statements does not contain 1 statements");
         }
 
-        let expected = vec![Statement::ExpressionStatement(
-            Expression::IntegerLiteral(5),
-        )];
+        let expected = vec![Statement::ExpressionStatement(Expression::IntegerLiteral(
+            5,
+        ))];
+
+        assert_eq!(program.statements, expected);
+    }
+
+    #[test]
+    fn prefix_expression() {
+        let input = "!5;";
+        let lexer = Lexer::new(input);
+        let mut parser = super::Parser::new(lexer);
+
+        let program = parser.parse_program();
+        if program.statements.len() != 1 {
+            panic!("program.statements does not contain 1 statements");
+        }
+
+        let expected = vec![Statement::ExpressionStatement(Expression::Prefix(
+            TokenType::BANG,
+            Box::new(Expression::IntegerLiteral(5)),
+        ))];
 
         assert_eq!(program.statements, expected);
     }

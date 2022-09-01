@@ -1,3 +1,5 @@
+use crate::token::TokenType;
+
 pub struct Program {
     pub statements: Vec<Statement>,
 }
@@ -16,6 +18,7 @@ pub struct Identifier(pub String);
 pub enum Expression {
     Identifier(Identifier),
     IntegerLiteral(i64),
+    Prefix(TokenType, Box<Expression>),
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Ord, Eq)]
